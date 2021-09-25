@@ -1,4 +1,4 @@
-import express, { Request, Response, Application } from 'express';
+import express, { Request, Response, Application } from "express";
 const app: Application = express();
 app.use(express.json());
 
@@ -10,38 +10,38 @@ const db = {
   users: [
     {
       id: 1,
-      firstName: 'Juku',
-      lastName: 'Juurikas',
+      firstName: "Juku",
+      lastName: "Juurikas",
     },
     {
       id: 2,
-      firstName: 'Mari',
-      lastName: 'Maasikas',
-    }
-  ]
-}
+      firstName: "Mari",
+      lastName: "Maasikas",
+    },
+  ],
+};
 
-app.get('/ping', (req: Request, res: Response) => {
+app.get("/ping", (req: Request, res: Response) => {
   res.status(ok).json({
-    message: 'Hello world!',
+    message: "Hello world!",
   });
 });
 
-app.get('/users', (req: Request, res: Response) => {
+app.get("/users", (req: Request, res: Response) => {
   res.status(ok).json({
     users: db.users,
   });
 });
 
-app.get('/users/:id', (req: Request, res: Response) => {
+app.get("/users/:id", (req: Request, res: Response) => {
   const id: number = parseInt(req.params.id);
-  const user = db.users.find((element) => element.id === id)
+  const user = db.users.find((element) => element.id === id);
   res.status(ok).json({
-    user
+    user,
   });
 });
 
-app.post('/users', (req: Request, res: Response) => {
+app.post("/users", (req: Request, res: Response) => {
   const { firstName, lastName } = req.body;
   const id = db.users.length + 1;
   db.users.push({
@@ -50,10 +50,10 @@ app.post('/users', (req: Request, res: Response) => {
     lastName,
   });
   res.status(created).json({
-    id
+    id,
   });
 });
 
 app.listen(port, () => {
-  console.log('Server is running');
+  console.log("Server is running");
 });
