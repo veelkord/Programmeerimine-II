@@ -102,14 +102,9 @@ app.get("/oppejoud/:id", (req: Request, res: Response) => {
       error: `No user found with id: ${id}`,
     });
   } else {
-    let oppeained = [];
-    for (let i = 0; i < db.oppeaine.length; i++) {
-      let temp = db.oppeaine.find(
-        (element) => element.id === i && element.oppejoudId === id
-      );
-
-      oppeained.push(temp);
-    }
+    const oppeained = db.oppeaine.filter(
+      (element) => element.oppejoudId === id
+    );
     return res.status(responseCodes.ok).json({
       oppejoud,
       oppeained,
