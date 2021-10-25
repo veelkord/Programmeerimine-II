@@ -15,26 +15,26 @@ const responseCodes = {
   badRequest: 400,
   notFound: 404,
 };
-interface Ojoud {
+interface Lecor {
   id: number;
   firstName: string;
   lastName: string;
 }
-interface Oaine {
+interface Course {
   id: number;
-  oppejoudId: number;
-  kursus: number;
-  aine: string;
-  toimumisAeg: string;
+  lecturerId: number;
+  semester: number;
+  course: string;
+  scheduled: string;
 }
 interface Db {
-  oppejoud: Ojoud[];
-  oppeaine: Oaine[];
+  lecturer: Lecor[];
+  courses: Course[];
 }
 // Dummy database
 
 const db: Db = {
-  oppejoud: [
+  lecturer: [
     {
       id: 1,
       firstName: "Martti",
@@ -51,37 +51,37 @@ const db: Db = {
       lastName: "Solo",
     },
   ],
-  oppeaine: [
+  courses: [
     {
       id: 1,
-      oppejoudId: 1,
-      kursus: 2,
-      aine: "Programmeerimine II",
-      toimumisAeg:
+      lecturerId: 1,
+      semester: 2,
+      course: "Programmeerimine II",
+      scheduled:
         "Neljapäev, 30.09.2021  14:15-17:30, Laupäev 13.11.2021 14:15-17:30",
     },
     {
       id: 2,
-      oppejoudId: 1,
-      kursus: 1,
-      aine: "Riistvara ja operatsioonisüsteemide alused",
-      toimumisAeg:
+      lecturerId: 1,
+      semester: 1,
+      course: "Riistvara ja operatsioonisüsteemide alused",
+      scheduled:
         "Reede, 08.10.2021  14:15-17:30,Neljapäev 21.10.2021 10:00-13:15",
     },
     {
       id: 3,
-      oppejoudId: 2,
-      kursus: 1,
-      aine: "Kujundusgraafika",
-      toimumisAeg:
+      lecturerId: 2,
+      semester: 1,
+      course: "Kujundusgraafika",
+      scheduled:
         "Neljapäev, 07.10.2021  14:15-17:30, Reede 22.10.2021 10:00-13:15",
     },
     {
       id: 4,
-      oppejoudId: 2,
-      kursus: 2,
-      aine: "Kujundusgraafika II",
-      toimumisAeg:
+      lecturerId: 2,
+      semester: 2,
+      course: "Kujundusgraafika II",
+      scheduled:
         "Reede, 01.10.2021  14:15-17:30, Laupäev 16.10.2021 14:15-17:30",
     },
   ],
@@ -89,58 +89,59 @@ const db: Db = {
 
 // Konkreetne õppejõud ja tema antavad ained
 
-app.get("/oppejoud/:id", (req: Request, res: Response) => {
+app.get("/lecturer/:id", (req: Request, res: Response) => {
   const id: number = parseInt(req.params.id, 10);
-  const oppejoud = db.oppejoud.find((element) => element.id === id);
+  const lecturer = db.lecturer.find((element) => element.id === id);
   if (!id) {
     return res.status(responseCodes.badRequest).json({
       error: "No valid id provided",
     });
   }
-  if (!oppejoud) {
+  if (!lecturer) {
     return res.status(responseCodes.badRequest).json({
       error: `No user found with id: ${id}`,
     });
   } else {
-    const oppeained = db.oppeaine.filter(
-      (element) => element.oppejoudId === id
-    );
+    const courses = db.courses.filter((element) => element.lecturerId === id);
     return res.status(responseCodes.ok).json({
-      oppejoud,
-      oppeained,
+      lecturer,
+      courses,
     });
   }
 });
 
-// Õppejõu kustutamine ainult siis kui tal antavaid aineid pole.
+// Õppejõu kustutamine ainult siis kui tal antavaid ained pole.
 
-app.delete("/oppejoud/:id", (req: Request, res: Response) => {
+app.delete("/lecturer/:id", (req: Request, res: Response) => {
   const id: number = parseInt(req.params.id, 10);
   if (!id) {
     return res.status(responseCodes.badRequest).json({
       error: "No valid id provided",
     });
   }
-  const index = db.oppejoud.findIndex((element) => element.id === id);
+  const index = db.lecturer.findIndex((element) => element.id === id);
   if (index < 0) {
     return res.status(responseCodes.badRequest).json({
       message: `User not found with id: ${id}`,
     });
   } else {
-    const index2 = db.oppeaine.findIndex(
-      (element) => element.oppejoudId !== id
-    );
-    if (index2 !== id) {
-      db.oppejoud.splice(index, 1);
+    const index2 = db.courses.find((element) => element.lecturerId === id);
+    console.log(index2);
+    if (!index2) {
+      db.lecturer.splice(index, 1);
       return res.status(responseCodes.noContent).send();
+    } else {
+      return res.status(responseCodes.badRequest).json({
+        error: "Lecturer has active courses!",
+      });
     }
   }
 });
 
 // Uue Õppejõu lisamine koos aine/ainetega - ained on kohtustulikud
 
-app.post("/oppejoud", (req: Request, res: Response) => {
-  const { firstName, lastName, kursus, aine, toimumisAeg } = req.body;
+app.post("/lecturer", (req: Request, res: Response) => {
+  const { firstName, lastName, semester, course, scheduled } = req.body;
   if (!firstName) {
     return res.status(responseCodes.badRequest).json({
       error: "First name is required",
@@ -151,58 +152,58 @@ app.post("/oppejoud", (req: Request, res: Response) => {
       error: "Last name is required",
     });
   }
-  if (!aine) {
+  if (!course) {
     return res.status(responseCodes.badRequest).json({
       error: "Course is required",
     });
   } else {
-    let id = db.oppejoud.length + 1;
-    const oppejoudId = id;
-    db.oppejoud.push({
+    let id = db.lecturer.length + 1;
+    const lecturerId = id;
+    db.lecturer.push({
       id,
       firstName,
       lastName,
     });
 
-    id = db.oppeaine.length + 1;
-    db.oppeaine.push({
+    id = db.courses.length + 1;
+    db.courses.push({
       id,
-      oppejoudId,
-      kursus,
-      aine,
-      toimumisAeg,
+      lecturerId,
+      semester,
+      course,
+      scheduled,
     });
     return res.status(responseCodes.created).json({
       id,
     });
   }
 });
-//   Õppeaine andmete uuendamine, muudame kursust ja toimumis aega
+//   Õppecourse andmete uuendamine, muudame semestrit ja toimumis aega
 
-app.patch("/oppeaine/:id", (req: Request, res: Response) => {
+app.patch("/courses/:id", (req: Request, res: Response) => {
   const id: number = parseInt(req.params.id, 10);
-  const { kursus, toimumisAeg } = req.body;
+  const { semester, scheduled } = req.body;
   if (!id) {
     return res.status(responseCodes.badRequest).json({
       error: "No valid id provided",
     });
   }
-  if (!kursus && !toimumisAeg) {
+  if (!semester && !scheduled) {
     return res.status(responseCodes.badRequest).json({
       error: "Nothing to update",
     });
   }
-  const index = db.oppeaine.findIndex((element) => element.id === id);
+  const index = db.courses.findIndex((element) => element.id === id);
   if (index < 0) {
     return res.status(responseCodes.badRequest).json({
       error: `No user found with id: ${id}`,
     });
   }
-  if (kursus) {
-    db.oppeaine[index].kursus = parseInt(kursus, 10);
+  if (semester) {
+    db.courses[index].semester = parseInt(semester, 10);
   }
-  if (toimumisAeg) {
-    db.oppeaine[index].toimumisAeg = toimumisAeg;
+  if (scheduled) {
+    db.courses[index].scheduled = scheduled;
   }
   return res.status(responseCodes.noContent).send();
 });
