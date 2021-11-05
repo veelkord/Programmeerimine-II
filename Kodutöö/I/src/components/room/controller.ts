@@ -1,82 +1,78 @@
 import { Request, Response } from "express";
 import responseCodes from "../general/responseCodes";
-import courseService from "./service";
+import roomService from "./service";
 
-const courseController = {
-  getCourseById: (req: Request, res: Response) => {
+const roomController = {
+  getRoomById: (req: Request, res: Response) => {
     const id: number = parseInt(req.params.id, 10);
-    const course = courseService.getCourseyId(id);
+    const room = roomService.getRoomId(id);
     if (!id) {
       return res.status(responseCodes.badRequest).json({
         error: "No valid id provided",
       });
     }
-    if (!course) {
+    if (!room) {
       return res.status(responseCodes.badRequest).json({
-        error: `No course found with id: ${id}`,
+        error: `No room found with id: ${id}`,
       });
     } else {
       return res.status(responseCodes.ok).json({
-        course,
+        room,
       });
     }
   },
-  addCourse: (req: Request, res: Response) => {
-    const { course } = req.body;
-    if (!course) {
+  addRoom: (req: Request, res: Response) => {
+    const { room } = req.body;
+    if (!room) {
       return res.status(responseCodes.badRequest).json({
-        error: "Course is missing",
+        error: "Room is missing",
       });
     } else {
-      const id = courseService.createCourse(course);
+      const id = roomService.createRoom(room);
       return res.status(responseCodes.created).json({
         id,
       });
     }
   },
-  deleteCourse: (req: Request, res: Response) => {
+  deleteRoom: (req: Request, res: Response) => {
     const id: number = parseInt(req.params.id, 10);
     if (!id) {
       return res.status(responseCodes.badRequest).json({
         error: "No valid id provided",
       });
     }
-    const courseExists = courseService.getCourseyId(id);
-    if (!courseExists) {
+    const roomExists = roomService.getRoomId(id);
+    if (!roomExists) {
       return res.status(responseCodes.badRequest).json({
-        message: `Course not found with id: ${id}`,
+        message: `Room not found with id: ${id}`,
       });
     } else {
-      const subjectExists = courseService.deleteCourse(id);
+      const subjectExists = roomService.deleteRoom(id);
       if (subjectExists) {
-        return res.status(responseCodes.badRequest).json({
-          error: "Course has active subjects!",
-        });
-      } else {
         return res.status(responseCodes.noContent).send();
       }
     }
   },
-  updateCourseById: (req: Request, res: Response) => {
+  updateRoomById: (req: Request, res: Response) => {
     const id: number = parseInt(req.params.id, 10);
-    const { course } = req.body;
+    const { room } = req.body;
     if (!id) {
       return res.status(responseCodes.badRequest).json({
         error: "No valid id provided",
       });
     }
-    if (!course) {
+    if (!room) {
       return res.status(responseCodes.badRequest).json({
         error: "Nothing to update",
       });
     }
-    const courseExists = courseService.updateCourse({
+    const roomExists = roomService.updateRoom({
       id,
-      course,
+      room,
     });
-    if (!courseExists) {
+    if (!roomExists) {
       return res.status(responseCodes.badRequest).json({
-        error: `No user found with id: ${id}`,
+        error: `No room found with id: ${id}`,
       });
     }
 
@@ -84,4 +80,4 @@ const courseController = {
   },
 };
 
-export default courseController;
+export default roomController;

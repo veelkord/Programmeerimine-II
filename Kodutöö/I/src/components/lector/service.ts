@@ -1,5 +1,5 @@
 import db from "../../db";
-import Course from "../course/interfaces";
+import { Subject } from "../subjects/interfaces";
 import Lector from "./interfaces";
 
 const lecturerService = {
@@ -8,17 +8,16 @@ const lecturerService = {
     return lecturer;
   },
 
-  getCourseById: (id: number): Course[] => {
-    const courses = db.courses.filter((element) => element.lecturerId === id);
-    return courses;
+  getSubjectById: (id: number): Subject[] => {
+    const subjects = db.subjects.filter((element) => element.lecturerId === id);
+    return subjects;
   },
   getLecturerIndex: (id: number): number => {
     const index = db.lecturer.findIndex((element) => element.id === id);
     return index;
   },
   deleteLecturerById: (id: number): boolean => {
-    const index = db.courses.findIndex((element) => element.lecturerId === id);
-    console.log(index);
+    const index = db.subjects.findIndex((element) => element.lecturerId === id);
     if (index >= 0) {
       return true;
     } else {
@@ -26,30 +25,29 @@ const lecturerService = {
       return false;
     }
   },
-  createlecturerAndHisCourses: (
-    firstName: string,
-    lastName: string,
-    semester: number,
-    course: string,
-    scheduled: string
-  ): number => {
+  createlecturer: (firstName: string, lastName: string): number => {
     let id = db.lecturer.length + 1;
-    const lecturerId = id;
     db.lecturer.push({
       id,
       firstName,
       lastName,
     });
-
-    id = db.courses.length + 1;
-    db.courses.push({
-      id,
-      lecturerId,
-      semester,
-      course,
-      scheduled,
-    });
     return id;
+  },
+  updateLecturerById: (data: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  }): boolean => {
+    const { id, firstName, lastName } = data;
+    let index = db.lecturer.findIndex((element) => element.id === id);
+    if (index >= 0) {
+      db.lecturer[index].firstName = firstName;
+      db.lecturer[index].lastName = lastName;
+      return true;
+    } else {
+      return false;
+    }
   },
 };
 

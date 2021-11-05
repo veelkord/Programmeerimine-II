@@ -1,34 +1,30 @@
-import express, { Request, Response, Application } from "express";
+import { Request, Response } from "express";
 import responseCodes from "../general/responseCodes";
 import lecturerService from "./service";
 
 const lecturerController = {
-  // Konkreetne õppejõud ja tema antavad ained
-
-  getLecturerAndHisCoursesById: (req: Request, res: Response) => {
+  getLecturerById: (req: Request, res: Response) => {
     const id: number = parseInt(req.params.id, 10);
-    const user = lecturerService.getLecturerById(id);
-    const courses = lecturerService.getCourseById(id);
+    const lecturer = lecturerService.getLecturerById(id);
     if (!id) {
       return res.status(responseCodes.badRequest).json({
         error: "No valid id provided",
       });
     }
-    if (!user) {
+    if (!lecturer) {
       return res.status(responseCodes.badRequest).json({
-        error: `No user found with id: ${id}`,
+        error: `No lecturer found with id: ${id}`,
       });
     } else {
       return res.status(responseCodes.ok).json({
-        user,
-        courses,
+        lecturer,
       });
     }
   },
 
   // Õppejõu kustutamine ainult siis kui tal antavaid ained pole.
 
-  deleteLecturerWhenNoCoursesById: (req: Request, res: Response) => {
+  deleteLecturerWhenNoSubjectsById: (req: Request, res: Response) => {
     const id: number = parseInt(req.params.id, 10);
     if (!id) {
       return res.status(responseCodes.badRequest).json({
@@ -41,10 +37,10 @@ const lecturerController = {
         message: `User not found with id: ${id}`,
       });
     } else {
-      const courseExists = lecturerService.deleteLecturerById(id);
-      if (courseExists) {
+      const subjectExists = lecturerService.deleteLecturerById(id);
+      if (subjectExists) {
         return res.status(responseCodes.badRequest).json({
-          error: "Lecturer has active courses!",
+          error: "Lecturer has active subjects!",
         });
       } else {
         return res.status(responseCodes.noContent).send();
@@ -52,10 +48,10 @@ const lecturerController = {
     }
   },
 
-  // Uue Õppejõu lisamine koos aine/ainetega - ained on kohtustulikud
+  // Uue Õppejõu lisamine
 
-  addLecturerAndHisCourses: (req: Request, res: Response) => {
-    const { firstName, lastName, semester, course, scheduled } = req.body;
+  addLecturer: (req: Request, res: Response) => {
+    const { firstName, lastName } = req.body;
     if (!firstName) {
       return res.status(responseCodes.badRequest).json({
         error: "First name is required",
@@ -65,23 +61,43 @@ const lecturerController = {
       return res.status(responseCodes.badRequest).json({
         error: "Last name is required",
       });
-    }
-    if (!course) {
-      return res.status(responseCodes.badRequest).json({
-        error: "Course is required",
-      });
     } else {
-      const id = lecturerService.createlecturerAndHisCourses(
-        firstName,
-        lastName,
-        semester,
-        course,
-        scheduled
-      );
+      const id = lecturerService.createlecturer(firstName, lastName);
       return res.status(responseCodes.created).json({
         id,
       });
     }
+  },
+  updateLecturerById: (req: Request, res: Response) => {
+    const id: number = parseInt(req.params.id, 10);
+    const { firstName, lastName } = req.body;
+    if (!id) {
+      return res.status(responseCodes.badRequest).json({
+        error: "No valid id provided",
+      });
+    }
+    if (!firstName) {
+      return res.status(responseCodes.badRequest).json({
+        error: "Provide firstname",
+      });
+    }
+    if (!lastName) {
+      return res.status(responseCodes.badRequest).json({
+        error: "Provide lastname",
+      });
+    }
+    const lecturerExists = lecturerService.updateLecturerById({
+      id,
+      firstName,
+      lastName,
+    });
+    if (!lecturerExists) {
+      return res.status(responseCodes.badRequest).json({
+        error: `No user found with id: ${id}`,
+      });
+    }
+
+    return res.status(responseCodes.noContent).send();
   },
 };
 
