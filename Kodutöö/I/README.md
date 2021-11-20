@@ -8,4 +8,4 @@ Typescripti laadimiseks npm i -g typescript
 Klooni repo
 Lae alla sõltuvused npm i
 
-API - documentatsioon on tehtud Swaggeriga - kui server käib siis - localhost:3000/api-docs/
+API - dokumentatsioon on tehtud Swaggeriga - kui server käib siis - localhost:3000/api-docs/

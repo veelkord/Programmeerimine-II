@@ -1,3 +1,4 @@
+import { User } from "./components/users/interfaces";
 import Lector from "./components/lector/interfaces";
 import { Subject } from "./components/subjects/interfaces";
 import Course from "./components/course/interface";
@@ -5,6 +6,7 @@ import Room from "./components/room/interface";
 // Interfaces
 
 interface Db {
+  users: User[];
   lecturer: Lector[];
   subjects: Subject[];
   courses: Course[];
@@ -14,6 +16,24 @@ interface Db {
 // Dummy database
 
 const db: Db = {
+  users: [
+    {
+      id: 1,
+      firstName: "Koviid",
+      lastName: "Neintiin",
+      email: "koviid@mail.ee",
+      password: "$2b$10$o/fvpIfz2yQuLkXE8u.BC.op0UilsH43/9lS7/13DNFFGeBOMjpwK",
+      role: "Admin",
+    },
+    {
+      id: 2,
+      firstName: "Krispi",
+      lastName: "Kriim",
+      email: "krispi@mail.ee",
+      password: "$2b$10$GS/zudPQhyJX2lxZFpBnN.edI7jPzxuX8y.eYZwxqTs12Q9FX8YCe",
+      role: "User",
+    },
+  ],
   lecturer: [
     {
       id: 1,
