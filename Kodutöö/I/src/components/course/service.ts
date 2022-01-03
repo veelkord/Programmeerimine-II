@@ -1,40 +1,68 @@
-import { ElementFlags } from "typescript";
-import db from "../../db";
-import Course from "./interface";
+import { FieldPacket, ResultSetHeader } from "mysql2";
+import pool from "../../database";
+import ICourse from "./interface";
 
 const courseService = {
-  getCourseyId: (id: number): Course | undefined => {
-    const course = db.courses.find((element) => element.id === id);
-    return course;
-  },
-  createCourse: (course: string): number => {
-    let id = db.courses.length + 1;
-    db.courses.push({ id, course });
-    return id;
-  },
-  deleteCourse: (id: number): boolean => {
-    const index = db.courses.findIndex((element) => element.id === id);
-    if (index <= 0) {
-      return true;
-    } else {
-      const subjectExists = db.subjects.find(
-        (element) => element.courseId === id
+  getAllCourses: async (): Promise<ICourse[] | false> => {
+    try {
+      const [courses]: [ICourse[], FieldPacket[]] = await pool.query(
+        "SELECT * FROM courses WHERE dateDeleted IS NULL"
       );
-      if (subjectExists) {
-        return true;
-      } else {
-        db.courses.splice(index, 1);
-        return false;
-      }
+      return courses;
+    } catch (error) {
+      return false;
     }
   },
-  updateCourse: (data: { id: number; course: string }): boolean => {
-    const { id, course } = data;
-    let index = db.courses.findIndex((element) => element.id === id);
-    if (index >= 0) {
-      db.courses[index].course = course;
-      return true;
-    } else {
+  getCourseId: async (id: number): Promise<ICourse[] | false | undefined> => {
+    try {
+      const course: [ICourse[], FieldPacket[]] = await pool.query(
+        "SELECT course FROM courses WHERE id = ? AND dateDeleted IS NULL LIMIT 1",
+        [id]
+      );
+      if (course[0][0] !== undefined) {
+        return course[0];
+      }
+    } catch (error) {
+      return false;
+    }
+  },
+  createCourse: async (course: string): Promise<number | false | undefined> => {
+    try {
+      const [id]: [ResultSetHeader, FieldPacket[]] = await pool.query(
+        "INSERT INTO courses SET course = ?",
+        [course]
+      );
+      return id.insertId;
+    } catch (error) {
+      return false;
+    }
+  },
+  deleteCourse: async (id: number): Promise<boolean | undefined> => {
+    try {
+      const [result]: [ResultSetHeader, FieldPacket[]] = await pool.query(
+        "UPDATE courses c LEFT OUTER JOIN subjects s ON c.id = s.courses_id SET c.dateDeleted = ? WHERE s.courses_id IS NULL AND c.id = ?",
+        [new Date(), id]
+      );
+      if (result.affectedRows > 0) {
+        return true;
+      }
+    } catch (error) {
+      return false;
+    }
+  },
+  updateCourse: async (data: {
+    id: number;
+    course: string;
+  }): Promise<boolean | undefined> => {
+    try {
+      const [result]: [ResultSetHeader, FieldPacket[]] = await pool.query(
+        "UPDATE courses SET course = ? WHERE id = ?",
+        [data.course, data.id]
+      );
+      if (result.affectedRows > 0) {
+        return true;
+      }
+    } catch (error) {
       return false;
     }
   },

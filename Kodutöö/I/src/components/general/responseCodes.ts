@@ -6,6 +6,7 @@ const responseCodes = {
   badRequest: 400,
   notAuthorized: 401,
   notFound: 404,
+  ServerError: 500,
 };
 
 export default responseCodes;

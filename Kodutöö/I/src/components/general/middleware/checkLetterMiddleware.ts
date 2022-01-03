@@ -4,9 +4,14 @@ import validateField from "../services/service";
 
 const checkAlphabet = (req: Request, res: Response, next: NextFunction) => {
   const { firstName, lastName } = req.body;
-  console.log(req.body);
-  let testFirst = validateField.testName(firstName);
-  let testLast = validateField.testName(lastName);
+  let testFirst = true;
+  let testLast = true;
+  if (firstName) {
+    testFirst = validateField.testName(firstName);
+  }
+  if (lastName) {
+    testLast = validateField.testName(lastName);
+  }
   if (testFirst && testLast) {
     next();
   } else {

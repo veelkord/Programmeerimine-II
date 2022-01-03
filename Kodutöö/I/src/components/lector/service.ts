@@ -1,51 +1,83 @@
-import db from "../../db";
-import { Subject } from "../subjects/interfaces";
-import Lector from "./interfaces";
+import { FieldPacket, ResultSetHeader } from "mysql2";
+import pool from "../../database";
+import { ILector, INewLector, ILecturerSubjects } from "./interfaces";
 
 const lecturerService = {
-  getLecturerById: (id: number): Lector | undefined => {
-    const lecturer = db.lecturer.find((element) => element.id === id);
-    return lecturer;
-  },
-
-  getSubjectById: (id: number): Subject[] => {
-    const subjects = db.subjects.filter((element) => element.lecturerId === id);
-    return subjects;
-  },
-  getLecturerIndex: (id: number): number => {
-    const index = db.lecturer.findIndex((element) => element.id === id);
-    return index;
-  },
-  deleteLecturerById: (id: number): boolean => {
-    const index = db.subjects.findIndex((element) => element.lecturerId === id);
-    if (index >= 0) {
-      return true;
-    } else {
-      db.lecturer.splice(index, 1);
+  getAllLecturers: async (): Promise<ILector[] | false> => {
+    try {
+      const [lecturers]: [ILector[], FieldPacket[]] = await pool.query(
+        "SELECT * FROM lecturers WHERE dateDeleted IS NULL"
+      );
+      return lecturers;
+    } catch (error) {
       return false;
     }
   },
-  createlecturer: (firstName: string, lastName: string): number => {
-    let id = db.lecturer.length + 1;
-    db.lecturer.push({
-      id,
-      firstName,
-      lastName,
-    });
-    return id;
+  getLecturersSubjects: async (): Promise<ILecturerSubjects[] | false> => {
+    try {
+      const [activeSubjects]: [ILecturerSubjects[], FieldPacket[]] =
+        await pool.query(
+          'SELECT CONCAT(lecturers.firstName," ",lecturers.lastName) AS fullName,(SELECT GROUP_CONCAT(subject) FROM subjects WHERE lecturers.id = lecturers_id) AS activeSubjects FROM lecturers INNER JOIN subjects ON lecturers.id = subjects.lecturers_id WHERE lecturers.dateDeleted IS NULL GROUP BY fullName, activeSubjects ORDER BY activeSubjects DESC;'
+        );
+      return activeSubjects;
+    } catch (error) {
+      return false;
+    }
   },
-  updateLecturerById: (data: {
-    id: number;
-    firstName: string;
-    lastName: string;
-  }): boolean => {
-    const { id, firstName, lastName } = data;
-    let index = db.lecturer.findIndex((element) => element.id === id);
-    if (index >= 0) {
-      db.lecturer[index].firstName = firstName;
-      db.lecturer[index].lastName = lastName;
-      return true;
-    } else {
+  getLecturerById: async (
+    id: number
+  ): Promise<ILector[] | false | undefined> => {
+    try {
+      const lecturer: [ILector[], FieldPacket[]] = await pool.query(
+        "SELECT firstName, lastName FROM lecturers WHERE id = ? AND dateDeleted IS NULL",
+        [id]
+      );
+      if (lecturer[0][0] !== undefined) {
+        return lecturer[0];
+      }
+    } catch (error) {
+      return false;
+    }
+  },
+  deleteLecturerById: async (
+    id: number
+  ): Promise<number | false | undefined> => {
+    try {
+      const [index]: [ResultSetHeader, FieldPacket[]] = await pool.query(
+        "UPDATE lecturers l LEFT OUTER JOIN subjects s  ON l.id = s.lecturers_id SET l.dateDeleted = ? WHERE s.lecturers_id IS NULL AND l.id = ?",
+        [new Date(), id]
+      );
+      if (index.affectedRows > 0) {
+        return index.affectedRows;
+      }
+    } catch (error) {
+      return false;
+    }
+  },
+  createlecturer: async (newLecturer: INewLector): Promise<number | false> => {
+    try {
+      const [result]: [ResultSetHeader, FieldPacket[]] = await pool.query(
+        "INSERT INTO lecturers SET ? ",
+        [{ ...newLecturer }]
+      );
+      return result.insertId;
+    } catch (error) {
+      return false;
+    }
+  },
+  updateLecturerById: async (
+    newLecturer: INewLector,
+    id: number
+  ): Promise<boolean | undefined> => {
+    try {
+      const [update]: [ResultSetHeader, FieldPacket[]] = await pool.query(
+        "UPDATE lecturers SET ? WHERE id = ?",
+        [{ ...newLecturer }, id]
+      );
+      if (update.affectedRows > 0) {
+        return true;
+      }
+    } catch (error) {
       return false;
     }
   },

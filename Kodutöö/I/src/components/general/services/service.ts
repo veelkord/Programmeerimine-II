@@ -1,7 +1,7 @@
 const validateField = {
-  testFields: (name: string) => {
+  testFields: (name: string): any => {
     let result = name.match(/[0-9A-Za-zÄÖÜäöü -.,!?]/g);
-    if (result?.length == name.length) {
+    if (result!.length == name.length) {
       return true;
     }
     return false;

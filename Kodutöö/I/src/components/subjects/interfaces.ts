@@ -1,18 +1,23 @@
 // Interfaces
 
-interface Subject {
+import { RowDataPacket } from "mysql2";
+
+interface ISubject extends RowDataPacket {
   id: number;
-  lecturerId: number;
-  courseId: number;
+  lecturers_id: number;
+  coursesid: number;
+  subject: string;
+  scheduled: string;
+  dateCreated: Date;
+  dateUpdated: Date;
+  dateDeleted: Date | null;
+}
+
+interface INewSubject {
+  lecturers_id: number;
+  courses_id: number;
   subject: string;
   scheduled: string;
 }
 
-interface SubjectData {
-  lecturerId: number;
-  courseId: number;
-  subject: string;
-  scheduled: string;
-}
-
-export { Subject, SubjectData };
+export { ISubject, INewSubject };

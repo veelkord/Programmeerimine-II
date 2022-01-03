@@ -1,12 +1,26 @@
 import express, { Request, Response, Application } from "express";
 import responseCodes from "../general/responseCodes";
-import { SubjectData } from "./interfaces";
+import { INewSubject } from "./interfaces";
 import subjectServices from "./service";
 
 const subjectController = {
-  getSubjectById: (req: Request, res: Response) => {
+  getAllSubjects: async (req: Request, res: Response) => {
+    const subjects = await subjectServices.getAllSubjects();
+    if (subjects) {
+      return res.status(responseCodes.ok).json({ subjects });
+    }
+    return res.status(responseCodes.ServerError).json({
+      error: "Server error",
+    });
+  },
+  getSubjectById: async (req: Request, res: Response) => {
     const id: number = parseInt(req.params.id, 10);
-    const subject = subjectServices.getSubjectById(id);
+    const subject = await subjectServices.getSubjectById(id);
+    if (subject === false) {
+      return res.status(responseCodes.ServerError).json({
+        error: "Server error",
+      });
+    }
     if (!id) {
       return res.status(responseCodes.badRequest).json({
         error: "No valid id provided",
@@ -22,8 +36,8 @@ const subjectController = {
       });
     }
   },
-  addSubject: (req: Request, res: Response) => {
-    const { lecturerId, courseId, subject, scheduled } = req.body;
+  addSubject: async (req: Request, res: Response) => {
+    const { lecturers_id, courses_id, subject, scheduled } = req.body;
     if (!subject) {
       return res.status(responseCodes.badRequest).json({
         error: "Subject is missing",
@@ -34,70 +48,80 @@ const subjectController = {
         error: "Scheduled is missing",
       });
     }
-    if (!courseId) {
+    if (!courses_id) {
       return res.status(responseCodes.badRequest).json({
         error: "Course id is missing",
       });
     }
-    if (!lecturerId) {
+    if (!lecturers_id) {
       return res.status(responseCodes.badRequest).json({
         error: "Lecturer id is missing",
       });
     } else {
-      const subjectData: SubjectData = {
-        lecturerId,
-        courseId,
+      const subjectData: INewSubject = {
+        lecturers_id,
+        courses_id,
         subject,
         scheduled,
       };
-      const id = subjectServices.createSubject(subjectData);
-      return res.status(responseCodes.created).json({
-        id,
+      const id = await subjectServices.createSubject(subjectData);
+      if (id) {
+        return res.status(responseCodes.created).json({
+          id,
+        });
+      }
+      return res.status(responseCodes.ServerError).json({
+        error: "Server error",
       });
     }
   },
-  deleteSubject: (req: Request, res: Response) => {
+  deleteSubject: async (req: Request, res: Response) => {
     const id: number = parseInt(req.params.id, 10);
     if (!id) {
       return res.status(responseCodes.badRequest).json({
         error: "No valid id provided",
       });
     }
-    const subjectExists = subjectServices.getSubjectById(id);
-    if (!subjectExists) {
+    const subjectExists = await subjectServices.deleteSubject(id);
+    if (subjectExists === undefined) {
       return res.status(responseCodes.badRequest).json({
         message: `Subject not found with id: ${id}`,
       });
-    } else {
-      const subjectExists = subjectServices.deleteSubject(id);
-      if (subjectExists) {
-        return res.status(responseCodes.noContent).send();
-      }
     }
+    if (subjectExists) {
+      return res.status(responseCodes.noContent).send();
+    }
+    return res.status(responseCodes.ServerError).json({
+      error: "Server error",
+    });
   },
-  //   Õppeaine andmete uuendamine, muudame semestrit ja toimumis aega
 
-  updateSubjectById: (req: Request, res: Response) => {
+  updateSubjectById: async (req: Request, res: Response) => {
     const id: number = parseInt(req.params.id, 10);
-    const { courseId, scheduled } = req.body;
+    const { courses_id, scheduled } = req.body;
     if (!id) {
       return res.status(responseCodes.badRequest).json({
         error: "No valid id provided",
       });
     }
-    if (!courseId && !scheduled) {
+    if (!courses_id && !scheduled) {
       return res.status(responseCodes.badRequest).json({
         error: "Nothing to update",
       });
     }
-    const subjectExists = subjectServices.updateSubjectById({
+    const subjectExists = await subjectServices.updateSubjectById({
       id,
-      courseId,
+      courses_id,
       scheduled,
     });
-    if (!subjectExists) {
+    if (subjectExists === undefined) {
       return res.status(responseCodes.badRequest).json({
         error: `No subject found with id: ${id}`,
+      });
+    }
+    if (subjectExists === false) {
+      return res.status(responseCodes.ServerError).json({
+        error: "Server error",
       });
     }
 
