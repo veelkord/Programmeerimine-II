@@ -1,4 +1,4 @@
-Programmeerimine II kodutöö
+Programmeerimine Viimane kodutöö
 
 by: Jaanus Saago
 
@@ -9,3 +9,5 @@ Klooni repo
 Lae alla sõltuvused npm i
 
 API - dokumentatsioon on tehtud Swaggeriga - kui server käib siis - localhost:3000/api-docs/
+
+Testide käivitamine npm start

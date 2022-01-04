@@ -44,7 +44,7 @@ const lecturerService = {
   ): Promise<number | false | undefined> => {
     try {
       const [index]: [ResultSetHeader, FieldPacket[]] = await pool.query(
-        "UPDATE lecturers l LEFT OUTER JOIN subjects s  ON l.id = s.lecturers_id SET l.dateDeleted = ? WHERE s.lecturers_id IS NULL AND l.id = ?",
+        "UPDATE lecturers l LEFT OUTER JOIN subjects s ON l.id = s.lecturers_id SET l.dateDeleted = ? WHERE s.lecturers_id IS NULL AND l.id = ?",
         [new Date(), id]
       );
       if (index.affectedRows > 0) {
