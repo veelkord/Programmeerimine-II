@@ -1,6 +1,8 @@
 // User interface
 
-interface NewUser {
+import { RowDataPacket } from "mysql2";
+
+interface INewUser {
   firstName: string;
   lastName: string;
   email: string;
@@ -8,11 +10,14 @@ interface NewUser {
   role: "Admin" | "User";
 }
 
-interface User extends NewUser {
+interface IUser extends INewUser, RowDataPacket {
   id: number;
+  dateCreated: Date;
+  dateUpdated: Date;
+  dateDeleted: Date | null;
 }
 
-interface UpdateUser {
+interface IUpdateUser {
   id: number;
   firstName?: string;
   lastName?: string;
@@ -21,4 +26,4 @@ interface UpdateUser {
   role?: "Admin" | "User";
 }
 
-export { User, UpdateUser, NewUser };
+export { IUser, IUpdateUser, INewUser };

@@ -7,16 +7,14 @@ const checkAlphabetAndNumber = (
   res: Response,
   next: NextFunction
 ) => {
-  const { semester, scheduled, subject } = req.body;
-  let testSemester = true;
+  const { courses_id, scheduled, subject } = req.body;
   let testScheduled = true;
   let testSubject = true;
 
-  semester ? (testSemester = validateField.testFields(semester)) : true;
   scheduled ? (testScheduled = validateField.testFields(scheduled)) : true;
   subject ? (testSubject = validateField.testFields(subject)) : true;
 
-  if (testSemester && testScheduled && testSubject) {
+  if (testScheduled && testSubject) {
     next();
   } else {
     return res.status(responseCodes.badRequest).json({

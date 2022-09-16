@@ -19,6 +19,10 @@
         "type": "string",
         "example": "Maasikas"
       },
+      "fullName": {
+        "type": "string",
+        "example": "Jüri Juurikas"
+      },
       "email": {
         "type": "string",
         "example": "mari@mari.ee"
@@ -34,6 +38,10 @@
       "subject": {
         "type": "string",
         "example": "Matemaatika"
+      },
+      "activeSubjects": {
+        "type": "string",
+        "example": "Aine1, Aine2, Aine3"
       },
       "scheduled": {
         "type": "string",
@@ -99,6 +107,17 @@
           }
         }
       },
+      "lecturersAndSubjects": {
+        "type": "object",
+        "properties": {
+          "fullname": {
+            "$ref": "#/components/schemas/fullName"
+          },
+          "activeSubjects": {
+            "$ref": "#/components/schemas/activeSubjects"
+          }
+        }
+      },
       "subjects": {
         "type": "object",
         "properties": {
@@ -156,6 +175,7 @@
       "post": {
         "tags": ["Login"],
         "description": "Login",
+        "summary": "Login",
         "requestBody": {
           "content": {
             "application/json": {
@@ -230,6 +250,7 @@
 
       "get": {
         "tags": ["Users"],
+        "summary": "Get User information by id",
         "description": "Get user by id",
         "parameters": [],
         "security": [
@@ -285,6 +306,7 @@
       },
       "delete": {
         "tags": ["Users"],
+        "summary": "Delete user by id",
         "description": "Delete user",
         "security": [
           {
@@ -338,6 +360,7 @@
       },
       "patch": {
         "tags": ["Users"],
+        "summary": "Update user by id",
         "description": "Update user",
         "security": [
           {
@@ -406,8 +429,9 @@
     },
     "/users": {
       "get": {
-        "tags": ["All Users"],
+        "tags": ["Users"],
         "description": "Get all users by id",
+        "summary": "Get all users by id",
         "parameters": [],
         "security": [
           {
@@ -435,6 +459,7 @@
       },
       "post": {
         "tags": ["Users"],
+        "summary": "Add new user",
         "description": "Add new user",
         "security": [
           {
@@ -520,7 +545,7 @@
         }
       }
     },
-    "/lecturer/{id}": {
+    "/lecturers/{id}": {
       "parameters": [
         {
           "name": "id",
@@ -534,6 +559,7 @@
       ],
       "get": {
         "tags": ["Lecturer"],
+        "summary": "Get lecturer by id",
         "description": "Get lecturer by id",
         "parameters": [],
         "security": [
@@ -589,6 +615,7 @@
       },
       "delete": {
         "tags": ["Lecturer"],
+        "summary": "Delete lecturer by id",
         "description": "Delete lecturer",
         "security": [
           {
@@ -642,6 +669,7 @@
       },
       "patch": {
         "tags": ["Lecturer"],
+        "summary": "Update lecturer by id",
         "description": "Update Lecturer",
         "security": [
           {
@@ -716,9 +744,39 @@
         }
       }
     },
-    "/lecturer": {
+    "/lecturers": {
+      "get": {
+        "tags": ["Lecturer"],
+        "summary": "Get all lecturers",
+        "description": "Get all lecturers",
+        "parameters": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all lecturers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "$ref": "#/components/schemas/lecturer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": ["Lecturer"],
+        "summary": "Add new lecturer",
         "description": "Add new lecturer",
         "security": [
           {
@@ -788,7 +846,60 @@
         }
       }
     },
-    "/subject/{id}": {
+    "/lecturers/activeCourse": {
+      "get": {
+        "tags": ["Lecturer"],
+        "summary": "Get those lecturers who have subjects",
+        "description": "Get lecturers who have subjects",
+        "parameters": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all lecturers who have subjects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "$ref": "#/components/schemas/lecturersAndSubjects"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No active courses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "Not found": {
+                    "value": {
+                      "error": "No active courses"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subjects/{id}": {
       "parameters": [
         {
           "name": "id",
@@ -802,6 +913,7 @@
       ],
       "get": {
         "tags": ["Subjects"],
+        "summary": "Get subject by id",
         "description": "Get subject by id",
         "parameters": [],
         "security": [
@@ -857,6 +969,7 @@
       },
       "delete": {
         "tags": ["Subjects"],
+        "summary": "Delete subject by id",
         "description": "Delete subject",
         "security": [
           {
@@ -905,6 +1018,7 @@
       },
       "patch": {
         "tags": ["Subjects"],
+        "summary": "Update subject by id",
         "description": "Update subject",
         "security": [
           {
@@ -974,9 +1088,39 @@
         }
       }
     },
-    "/subject": {
+    "/subjects": {
+      "get": {
+        "tags": ["Subjects"],
+        "summary": "Get all subjects",
+        "description": "Get all Subjects",
+        "parameters": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all subjects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "$ref": "#/components/schemas/subject"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": ["Subjects"],
+        "summary": "Add new subject",
         "description": "Add new subject",
         "security": [
           {
@@ -1062,7 +1206,7 @@
         }
       }
     },
-    "/course/{id}": {
+    "/courses/{id}": {
       "parameters": [
         {
           "name": "id",
@@ -1076,6 +1220,7 @@
       ],
       "get": {
         "tags": ["Course"],
+        "summary": "Get course by id",
         "description": "Get course by id",
         "parameters": [],
         "security": [
@@ -1131,6 +1276,7 @@
       },
       "delete": {
         "tags": ["Course"],
+        "summary": "Delete course by id",
         "description": "Delete course",
         "security": [
           {
@@ -1184,6 +1330,7 @@
       },
       "patch": {
         "tags": ["Course"],
+        "summary": "Update course by id",
         "description": "Update Course",
         "security": [
           {
@@ -1250,9 +1397,39 @@
         }
       }
     },
-    "/course": {
+    "/courses": {
+      "get": {
+        "tags": ["Course"],
+        "summary": "Get all courses",
+        "description": "Get all courses",
+        "parameters": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all courses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "$ref": "#/components/schemas/course"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": ["Course"],
+        "summary": "Add new course",
         "description": "Add new course",
         "security": [
           {
@@ -1314,7 +1491,7 @@
         }
       }
     },
-    "/room/{id}": {
+    "/rooms/{id}": {
       "parameters": [
         {
           "name": "id",
@@ -1328,6 +1505,7 @@
       ],
       "get": {
         "tags": ["Room"],
+        "summary": "Get room by id",
         "description": "Get room by id",
         "parameters": [],
         "security": [
@@ -1383,6 +1561,7 @@
       },
       "delete": {
         "tags": ["Room"],
+        "summary": "Delete room by id",
         "description": "Delete room",
         "security": [
           {
@@ -1431,6 +1610,7 @@
       },
       "patch": {
         "tags": ["Room"],
+        "summary": "Update room by id",
         "description": "Update Room",
         "security": [
           {
@@ -1497,9 +1677,39 @@
         }
       }
     },
-    "/room": {
+    "/rooms": {
+      "get": {
+        "tags": ["Room"],
+        "summary": "Get all rooms",
+        "description": "Get all rooms",
+        "parameters": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all rooms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "$ref": "#/components/schemas/room"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": ["Room"],
+        "summary": "Add new room",
         "description": "Add new room",
         "security": [
           {

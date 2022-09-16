@@ -1,27 +1,37 @@
 import { Request, Response } from "express";
 import responseCodes from "../general/responseCodes";
-import { NewUser, UpdateUser } from "./interfaces";
+import { INewUser, IUpdateUser } from "./interfaces";
 import userService from "./service";
 
 const userController = {
-  getAllUsers: (req: Request, res: Response) => {
-    const users = userService.getAllUsers();
-    return res.status(responseCodes.ok).json({
-      users,
+  getAllUsers: async (req: Request, res: Response) => {
+    const users = await userService.getAllUsers();
+    if (users) {
+      return res.status(responseCodes.ok).json({
+        users,
+      });
+    }
+    return res.status(responseCodes.ServerError).json({
+      error: "Server error",
     });
   },
-  getUserById: (req: Request, res: Response) => {
+  getUserById: async (req: Request, res: Response) => {
     const id: number = parseInt(req.params.id, 10);
-    const user = userService.getUserById(id);
+    const user = await userService.getUserById(id);
     if (!id) {
       return res.status(responseCodes.badRequest).json({
         error: "No valid id provided",
       });
     }
     if (id === res.locals.user.id || res.locals.user.role === "Admin") {
-      if (!user) {
+      if (user == undefined) {
         return res.status(responseCodes.badRequest).json({
           error: `No user found with id: ${id}`,
+        });
+      }
+      if (!user) {
+        return res.status(responseCodes.ServerError).json({
+          error: "Server error",
         });
       }
       return res.status(responseCodes.ok).json({
@@ -32,20 +42,25 @@ const userController = {
       error: `You have no permission for this`,
     });
   },
-  deleteUser: (req: Request, res: Response) => {
+  deleteUser: async (req: Request, res: Response) => {
     const id: number = parseInt(req.params.id, 10);
     if (!id) {
       return res.status(responseCodes.badRequest).json({
         error: "No valid id provided",
       });
     }
-    const userExists = userService.getUserById(id);
-    if (!userExists) {
+    const userExists = await userService.deleteUser(id);
+    if (userExists == undefined) {
       return res.status(responseCodes.badRequest).json({
         message: `User not found with id: ${id}`,
       });
     }
-    userService.deleteUser(id);
+    if (!userExists) {
+      return res.status(responseCodes.ServerError).json({
+        error: "Server error",
+      });
+    }
+
     return res.status(responseCodes.noContent).send();
   },
 
@@ -71,7 +86,7 @@ const userController = {
         error: "Email is required",
       });
     }
-    const newUser: NewUser = {
+    const newUser: INewUser = {
       firstName,
       lastName,
       password,
@@ -79,11 +94,16 @@ const userController = {
       role: "User",
     };
     const id = await userService.createUser(newUser);
+    if (!id) {
+      return res.status(responseCodes.ServerError).json({
+        error: "Server error",
+      });
+    }
     return res.status(responseCodes.created).json({
       id,
     });
   },
-  updateUserById: (req: Request, res: Response) => {
+  updateUserById: async (req: Request, res: Response) => {
     const id: number = parseInt(req.params.id, 10);
     const { firstName, lastName, email, password } = req.body;
     if (!id) {
@@ -93,20 +113,25 @@ const userController = {
     }
     if (!firstName && !lastName && !email && !password) {
       return res.status(responseCodes.badRequest).json({
-        error: "Nothing to Update",
+        error: "Nothing to update",
       });
     }
-    const updateUser: UpdateUser = {
+    const updateUser: any = {
       id,
       firstName,
       lastName,
       email,
       password,
     };
-    const userExists = userService.updateUserById(updateUser);
-    if (!userExists) {
+    const userExists = await userService.updateUserById(updateUser);
+    if (userExists === undefined) {
       return res.status(responseCodes.badRequest).json({
         error: `No user found with id: ${id}`,
+      });
+    }
+    if (!userExists) {
+      return res.status(responseCodes.ServerError).json({
+        error: "Server error",
       });
     }
     return res.status(responseCodes.noContent).send();
